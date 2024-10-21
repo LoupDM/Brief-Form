@@ -284,18 +284,6 @@ function addSection(title, content) {
         yPos = 20;
     }
 }
-                doc.autoTable({
-    startY: yPos,
-    head: [['Task', 'Owner', 'Due Date']],
-    body: data.tasks.map(task => [task.task, task.owner, task.dueDate]),
-    theme: 'striped',
-    headStyles: { fillColor: [52, 152, 219], textColor: 255 },
-    columnStyles: {
-        0: { cellWidth: 80 },
-        1: { cellWidth: 50 },
-        2: { cellWidth: 40 }
-    }
-});
 
                 // Add project details to PDF
                 addSection('Project Title:', data.projectTitle);
@@ -311,29 +299,30 @@ function addSection(title, content) {
                 // Add RACI
                 addSection('RACI:', `R: ${data.responsible}\nA: ${data.accountable}\nC: ${data.consulted}\nI: ${data.informed}`);
 
-                // Add Tasks
-                doc.setFontSize(14);
-                doc.setFont(undefined, 'bold');
-                doc.text('Tasks:', 10, yPos);
-                yPos += 10;
+// Add Tasks using autoTable
+doc.setFontSize(16);
+doc.setTextColor(44, 62, 80);
+doc.text('Tasks:', 20, yPos);
+yPos += 10;
 
-                doc.setFontSize(12);
-                doc.setFont(undefined, 'normal');
-                data.tasks.forEach((task, index) => {
-                    const taskText = `${index + 1}. ${task.task} - Owner: ${task.owner}, Due: ${task.dueDate}`;
-                    const lines = doc.splitTextToSize(taskText, 190);
-                    doc.text(lines, 10, yPos);
-                    yPos += lines.length * 5 + 5;
+doc.autoTable({
+    startY: yPos,
+    head: [['Task', 'Owner', 'Due Date']],
+    body: data.tasks.map(task => [task.task, task.owner, task.dueDate]),
+    theme: 'striped',
+    headStyles: { fillColor: [52, 152, 219], textColor: 255 },
+    columnStyles: {
+        0: { cellWidth: 80 },
+        1: { cellWidth: 50 },
+        2: { cellWidth: 40 }
+    }
+});
 
-                    if (yPos > 280) {
-                        doc.addPage();
-                        yPos = 10;
-                    }
-                });
+yPos = doc.lastAutoTable.finalY + 10;
 
                 addSection('Additional Notes:', data.additionalNotes);
 
-                doc.save('project_plan.pdf');
+                doc.save('project_brief.pdf');
             } else {
                 alert('No project plan to share. Please save a plan first.');
             }

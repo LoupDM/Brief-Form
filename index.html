@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project Plan Template</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body {
             background-color: #f0f4f8;
@@ -174,12 +175,14 @@
             <div class="flex justify-between">
                 <button type="submit" class="bg-green-500 text-white">Save</button>
                 <button type="button" id="loadBtn" class="bg-yellow-500 text-white">Load</button>
-                <button type="button" id="shareBtn" class="bg-blue-500 text-white">Share</button>
+                <button type="button" id="shareBtn" class="bg-blue-500 text-white">Share as PDF</button>
             </div>
         </form>
     </div>
 
     <script>
+        const { jsPDF } = window.jspdf;
+
         const taskTableBody = document.getElementById('taskTableBody');
 
         function createTaskRow(task = '', owner = '', dueDate = '') {
@@ -237,15 +240,66 @@
         });
 
         document.getElementById('shareBtn').addEventListener('click', function() {
-            const data = localStorage.getItem('projectPlan');
+            const data = JSON.parse(localStorage.getItem('projectPlan'));
             if (data) {
-                const blob = new Blob([data], {type: 'application/json'});
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'project_plan.json';
-                a.click();
-                URL.revokeObjectURL(url);
+                const doc = new jsPDF();
+                let yPos = 10;
+
+                // Helper function to add a section to the PDF
+                function addSection(title, content) {
+                    doc.setFontSize(14);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(title, 10, yPos);
+                    yPos += 7;
+                    doc.setFontSize(12);
+                    doc.setFont(undefined, 'normal');
+                    const lines = doc.splitTextToSize(content, 190);
+                    doc.text(lines, 10, yPos);
+                    yPos += lines.length * 5 + 5;
+
+                    if (yPos > 280) {
+                        doc.addPage();
+                        yPos = 10;
+                    }
+                }
+
+                // Add project details to PDF
+                addSection('Project Title:', data.projectTitle);
+                addSection('Where will this run?', data.whereRun);
+                addSection('Business Problem:', data.businessProblem);
+                addSection('Customer/Manager Action:', data.customerAction);
+                addSection('Define a Win:', data.defineWin);
+                addSection('Prime Prospect:', data.primeProspect);
+                addSection("Prime Prospect's Problem:", data.prospectProblem);
+                addSection('Know the Brand:', data.knowBrand);
+                addSection('Deliverables:', data.deliverables);
+
+                // Add RACI
+                addSection('RACI:', `R: ${data.responsible}\nA: ${data.accountable}\nC: ${data.consulted}\nI: ${data.informed}`);
+
+                // Add Tasks
+                doc.setFontSize(14);
+                doc.setFont(undefined, 'bold');
+                doc.text('Tasks:', 10, yPos);
+                yPos += 10;
+
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'normal');
+                data.tasks.forEach((task, index) => {
+                    const taskText = `${index + 1}. ${task.task} - Owner: ${task.owner}, Due: ${task.dueDate}`;
+                    const lines = doc.splitTextToSize(taskText, 190);
+                    doc.text(lines, 10, yPos);
+                    yPos += lines.length * 5 + 5;
+
+                    if (yPos > 280) {
+                        doc.addPage();
+                        yPos = 10;
+                    }
+                });
+
+                addSection('Additional Notes:', data.additionalNotes);
+
+                doc.save('project_plan.pdf');
             } else {
                 alert('No project plan to share. Please save a plan first.');
             }

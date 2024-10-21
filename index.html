@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Plan Template</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f0f4f8;
+            color: #333;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+        h1 {
+            color: #2c5282;
+            border-bottom: 2px solid #2c5282;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        label {
+            color: #2c5282;
+            font-weight: 600;
+        }
+        input[type="text"], input[type="date"], textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            margin-top: 0.25rem;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid #cbd5e0;
+            padding: 0.5rem;
+        }
+        th {
+            background-color: #edf2f7;
+            font-weight: 600;
+            text-align: left;
+        }
+        .delete-task {
+            background-color: #f56565;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+        .delete-task:hover {
+            background-color: #e53e3e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold">Project Plan Template</h1>
+        
+        <form id="projectForm" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="projectTitle">PROJECT TITLE:</label>
+                    <input type="text" id="projectTitle" name="projectTitle">
+                </div>
+                <div>
+                    <label for="whereRun">WHERE WILL THIS RUN?</label>
+                    <input type="text" id="whereRun" name="whereRun">
+                </div>
+            </div>
+
+            <div>
+                <label for="businessProblem">WHAT'S THE BUSINESS PROBLEM THAT WE ARE TRYING TO SOLVE?</label>
+                <textarea id="businessProblem" name="businessProblem" rows="3"></textarea>
+            </div>
+
+            <div>
+                <label for="customerAction">WHAT ARE WE ASKING THE CUSTOMER/MANAGER TO DO?</label>
+                <textarea id="customerAction" name="customerAction" rows="3"></textarea>
+            </div>
+
+            <div>
+                <label for="defineWin">HOW DO WE DEFINE A WIN?</label>
+                <textarea id="defineWin" name="defineWin" rows="3"></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="primeProspect">WHO'S THE PRIME PROSPECT?</label>
+                    <textarea id="primeProspect" name="primeProspect" rows="3"></textarea>
+                </div>
+                <div>
+                    <label for="prospectProblem">WHAT'S THE PRIME PROSPECT'S PROBLEM?</label>
+                    <textarea id="prospectProblem" name="prospectProblem" rows="3"></textarea>
+                </div>
+            </div>
+
+            <div>
+                <label for="knowBrand">KNOW THE BRAND</label>
+                <textarea id="knowBrand" name="knowBrand" rows="3"></textarea>
+            </div>
+
+            <div>
+                <label for="deliverables">Deliverable(s):</label>
+                <textarea id="deliverables" name="deliverables" rows="3"></textarea>
+            </div>
+
+            <div>
+                <h3 class="font-semibold mb-2 text-lg">RACI:</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="responsible">R (Responsible):</label>
+                        <input type="text" id="responsible" name="responsible">
+                    </div>
+                    <div>
+                        <label for="accountable">A (Accountable):</label>
+                        <input type="text" id="accountable" name="accountable">
+                    </div>
+                    <div>
+                        <label for="consulted">C (Consulted):</label>
+                        <input type="text" id="consulted" name="consulted">
+                    </div>
+                    <div>
+                        <label for="informed">I (Informed):</label>
+                        <input type="text" id="informed" name="informed">
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="font-semibold mb-2 text-lg">TIMING and TASKS</h3>
+                <table id="tasksTable">
+                    <thead>
+                        <tr>
+                            <th>Task</th>
+                            <th>Owner</th>
+                            <th>Due Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="taskTableBody">
+                        <!-- Tasks will be added here dynamically -->
+                    </tbody>
+                </table>
+                <button type="button" id="addTask" class="mt-4 bg-blue-500 text-white">Add Task</button>
+            </div>
+
+            <div>
+                <label for="additionalNotes">Additional Notes:</label>
+                <textarea id="additionalNotes" name="additionalNotes" rows="3"></textarea>
+            </div>
+
+            <div class="flex justify-between">
+                <button type="submit" class="bg-green-500 text-white">Save</button>
+                <button type="button" id="loadBtn" class="bg-yellow-500 text-white">Load</button>
+                <button type="button" id="shareBtn" class="bg-blue-500 text-white">Share</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const taskTableBody = document.getElementById('taskTableBody');
+
+        function createTaskRow(task = '', owner = '', dueDate = '') {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" name="task[]" value="${task}"></td>
+                <td><input type="text" name="owner[]" value="${owner}"></td>
+                <td><input type="date" name="dueDate[]" value="${dueDate}"></td>
+                <td><button type="button" class="delete-task">Delete</button></td>
+            `;
+            row.querySelector('.delete-task').addEventListener('click', function() {
+                if (taskTableBody.children.length > 1) {
+                    row.remove();
+                } else {
+                    alert("You can't delete the last task. At least one task is required.");
+                }
+            });
+            return row;
+        }
+
+        document.getElementById('addTask').addEventListener('click', function() {
+            taskTableBody.appendChild(createTaskRow());
+        });
+
+        document.getElementById('projectForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            data.tasks = Array.from(formData.getAll('task[]')).map((task, index) => ({
+                task,
+                owner: formData.getAll('owner[]')[index],
+                dueDate: formData.getAll('dueDate[]')[index]
+            }));
+            localStorage.setItem('projectPlan', JSON.stringify(data));
+            alert('Project plan saved!');
+        });
+
+        document.getElementById('loadBtn').addEventListener('click', function() {
+            const data = JSON.parse(localStorage.getItem('projectPlan'));
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    if (key !== 'tasks') {
+                        const el = document.getElementById(key);
+                        if (el) el.value = data[key];
+                    }
+                });
+                taskTableBody.innerHTML = '';
+                data.tasks.forEach(task => {
+                    taskTableBody.appendChild(createTaskRow(task.task, task.owner, task.dueDate));
+                });
+                alert('Project plan loaded!');
+            } else {
+                alert('No saved project plan found!');
+            }
+        });
+
+        document.getElementById('shareBtn').addEventListener('click', function() {
+            const data = localStorage.getItem('projectPlan');
+            if (data) {
+                const blob = new Blob([data], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'project_plan.json';
+                a.click();
+                URL.revokeObjectURL(url);
+            } else {
+                alert('No project plan to share. Please save a plan first.');
+            }
+        });
+
+        // Initialize with one empty task
+        taskTableBody.appendChild(createTaskRow());
+    </script>
+</body>
+</html>

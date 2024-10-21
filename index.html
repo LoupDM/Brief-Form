@@ -284,7 +284,11 @@ function addSection(title, content) {
         yPos = 20;
     }
 }
-
+function formatDate(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+}
                 // Add project details to PDF
                 addSection('Project Title:', data.projectTitle);
                 addSection('Where will this run?', data.whereRun);
@@ -305,10 +309,11 @@ doc.setTextColor(44, 62, 80);
 doc.text('Tasks:', 20, yPos);
 yPos += 10;
 
+
 doc.autoTable({
     startY: yPos,
     head: [['Task', 'Owner', 'Due Date']],
-    body: data.tasks.map(task => [task.task, task.owner, task.dueDate]),
+    body: data.tasks.map(task => [task.task, task.owner, formatDate(task.dueDate)]),
     theme: 'striped',
     headStyles: { fillColor: [52, 152, 219], textColor: 255 },
     columnStyles: {

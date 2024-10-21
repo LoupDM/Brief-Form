@@ -322,7 +322,11 @@ yPos = doc.lastAutoTable.finalY + 10;
 
                 addSection('Additional Notes:', data.additionalNotes);
 
-                doc.save('project_brief.pdf');
+                // Generate filename based on project title
+let filename = data.projectTitle ? data.projectTitle.trim() : 'Project Plan';
+filename = filename.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.pdf';
+
+doc.save(filename);
             } else {
                 alert('No project plan to share. Please save a plan first.');
             }

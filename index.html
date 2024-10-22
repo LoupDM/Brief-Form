@@ -190,6 +190,12 @@
                 <button type="button" id="shareBtn" class="bg-blue-500 text-white">Share as PDF</button>
             </div>
         </form>
+        <div class="mt-4 p-4 bg-gray-100 rounded">
+    <p class="text-sm text-gray-600 mb-2">Data Storage Information:</p>
+    <p class="text-sm text-gray-600">• Your data is saved locally in your browser</p>
+    <p class="text-sm text-gray-600">• Last saved: <span id="lastSaved">Never</span></p>
+    <button type="button" id="clearDataBtn" class="mt-2 bg-red-500 text-white px-3 py-1 rounded text-sm">Clear Saved Data</button>
+</div>
     </div>
 
     <script>
@@ -339,6 +345,42 @@ doc.save(filename);
 
         // Initialize with one empty task
         taskTableBody.appendChild(createTaskRow());
+
+        // Update the save function to include timestamp
+document.getElementById('projectForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const data = getFormData();
+    data.lastSaved = new Date().toLocaleString();
+    localStorage.setItem('projectPlan', JSON.stringify(data));
+    updateLastSavedTime(data.lastSaved);
+    alert('Project plan saved!');
+});
+
+// Function to update the "Last saved" display
+function updateLastSavedTime(time) {
+    document.getElementById('lastSaved').textContent = time || 'Never';
+}
+
+// Clear data button functionality
+document.getElementById('clearDataBtn').addEventListener('click', function() {
+    if (confirm('Are you sure you want to clear all saved data? This cannot be undone.')) {
+        localStorage.removeItem('projectPlan');
+        document.getElementById('projectForm').reset();
+        taskTableBody.innerHTML = '';
+        taskTableBody.appendChild(createTaskRow());
+        updateLastSavedTime('Never');
+        alert('All saved data has been cleared.');
+    }
+});
+
+// Check for existing data on page load
+window.addEventListener('load', function() {
+    const savedData = localStorage.getItem('projectPlan');
+    if (savedData) {
+        const data = JSON.parse(savedData);
+        updateLastSavedTime(data.lastSaved);
+    }
+});
     </script>
 </body>
 </html>

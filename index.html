@@ -441,7 +441,6 @@ document.getElementById('shareBtn').addEventListener('click', function() {
             return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
         }
 
-// addSection function in the PDF generation code
 function addSection(title, content) {
     doc.setFontSize(16);
     doc.setTextColor(44, 62, 80);
@@ -449,45 +448,109 @@ function addSection(title, content) {
     yPos += 10;
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
-    
-    // Parse HTML content
-    const parser = new DOMParser();
-    const html = parser.parseFromString(content, 'text/html');
-    let processedText = '';
-    
-    // Process formatting
-    html.body.childNodes.forEach(node => {
-        if (node.nodeType === Node.TEXT_NODE) {
-            processedText += node.textContent + '\n';
-        } else if (node.nodeType === Node.ELEMENT_NODE) {
-            switch (node.nodeName.toLowerCase()) {
-                case 'p':
-                    processedText += node.textContent + '\n\n';
-                    break;
-                case 'strong':
-                case 'b':
-                    doc.setFont(undefined, 'bold');
-                    processedText += node.textContent;
-                    doc.setFont(undefined, 'normal');
-                    break;
-                case 'em':
-                case 'i':
-                    doc.setFont(undefined, 'italic');
-                    processedText += node.textContent;
-                    doc.setFont(undefined, 'normal');
-                    break;
-                case 'ul':
-                case 'ol':
-                    Array.from(node.children).forEach((li, index) => {
-                        processedText += `  • ${li.textContent}\n`;
-                    });
-                    processedText += '\n';
-                    break;
-                default:
-                    processedText += node.textContent + '\n';
+
+    // Function to handle text wrapping and page breaks
+    function addTextWithWrapping(text, fontSize = 12, style = 'normal') {
+        doc.setFontSize(fontSize);
+        doc.setFont("helvetica", style);
+        const lines = doc.splitTextToSize(text, 170);
+        
+        lines.forEach(line => {
+            if (yPos > 270) {
+                doc.addPage();
+                yPos = 20;
             }
-        }
-    });
+            doc.text(line, 20, yPos);
+            yPos += fontSize * 0.5;
+        });
+        yPos += 5; // Add space after text block
+    }
+
+    // Parse HTML content
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+
+    function processNode(node, level = 0) {
+        Array.from(node.childNodes).forEach(child => {
+            if (child.nodeType === Node.TEXT_NODE && child.textContent.trim()) {
+                addTextWithWrapping(child.textContent.trim());
+            } 
+            else if (child.nodeType === Node.ELEMENT_NODE) {
+                switch (child.tagName.toLowerCase()) {
+                    case 'h1':
+                        addTextWithWrapping(child.textContent, 24, 'bold');
+                        break;
+                    case 'h2':
+                        addTextWithWrapping(child.textContent, 20, 'bold');
+                        break;
+                    case 'h3':
+                        addTextWithWrapping(child.textContent, 16, 'bold');
+                        break;
+                    case 'strong':
+                    case 'b':
+                        addTextWithWrapping(child.textContent, 12, 'bold');
+                        break;
+                    case 'em':
+                    case 'i':
+                        addTextWithWrapping(child.textContent, 12, 'italic');
+                        break;
+                    case 'ul':
+                    case 'ol':
+                        yPos += 5;
+                        Array.from(child.children).forEach((li, index) => {
+                            if (yPos > 270) {
+                                doc.addPage();
+                                yPos = 20;
+                            }
+                            const bullet = child.tagName.toLowerCase() === 'ul' ? '•' : `${index + 1}.`;
+                            const indent = level * 10;
+                            doc.text(bullet, 20 + indent, yPos);
+                            const liText = doc.splitTextToSize(li.textContent.trim(), 160 - indent);
+                            liText.forEach((line, lineIndex) => {
+                                if (yPos > 270) {
+                                    doc.addPage();
+                                    yPos = 20;
+                                }
+                                doc.text(line, 30 + indent, yPos + (lineIndex * 7));
+                                if (lineIndex === liText.length - 1) {
+                                    yPos += (lineIndex + 1) * 7;
+                                }
+                            });
+                        });
+                        yPos += 5;
+                        break;
+                    case 'p':
+                        if (child.innerHTML.trim()) {
+                            processNode(child, level);
+                            yPos += 5;
+                        }
+                        break;
+                    case 'br':
+                        yPos += 7;
+                        break;
+                    case 'div':
+                        processNode(child, level);
+                        break;
+                    default:
+                        if (child.textContent.trim()) {
+                            addTextWithWrapping(child.textContent.trim());
+                        }
+                }
+            }
+        });
+    }
+
+    processNode(tempDiv);
+
+    // Ensure minimum spacing between sections
+    yPos += 10;
+
+    // Always check if we need a new page before starting next section
+    if (yPos > 270) {
+        doc.addPage();
+        yPos = 20;
+    }
+}
 
     // Split text into lines and add to PDF
     const lines = doc.splitTextToSize(processedText.trim(), 170);

@@ -524,6 +524,24 @@
                 alert('No saved project plan found!');
             }
         });
+         // Auto-load saved data when page loads
+window.addEventListener('DOMContentLoaded', function() {
+    const savedData = localStorage.getItem('projectPlan');
+    if (savedData) {
+        const data = JSON.parse(savedData);
+        Object.keys(data).forEach(key => {
+            if (key !== 'tasks') {
+                const el = document.getElementById(key);
+                if (el) el.value = data[key];
+            }
+        });
+        taskTableBody.innerHTML = '';
+        data.tasks.forEach(task => {
+            taskTableBody.appendChild(createTaskRow(task.task, task.owner, task.dueDate));
+        });
+        updateToolbarVisibility();
+    }
+});
 </script>
 </body>
 </html>

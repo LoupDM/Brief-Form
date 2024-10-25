@@ -441,26 +441,64 @@ document.getElementById('shareBtn').addEventListener('click', function() {
             return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
         }
 
-        // Helper function to add a section to the PDF
-        function addSection(title, content) {
-            doc.setFontSize(16);
-            doc.setTextColor(44, 62, 80);
-            doc.text(title, 20, yPos);
-            yPos += 10;
-            doc.setFontSize(12);
-            doc.setTextColor(0, 0, 0);
-            
-            // Strip HTML tags for PDF
-            const cleanContent = stripHtml(content);
-            const lines = doc.splitTextToSize(cleanContent, 170);
-            doc.text(lines, 20, yPos);
-            yPos += lines.length * 7 + 10;
-
-            if (yPos > 270) {
-                doc.addPage();
-                yPos = 20;
+// addSection function in the PDF generation code
+function addSection(title, content) {
+    doc.setFontSize(16);
+    doc.setTextColor(44, 62, 80);
+    doc.text(title, 20, yPos);
+    yPos += 10;
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    
+    // Parse HTML content
+    const parser = new DOMParser();
+    const html = parser.parseFromString(content, 'text/html');
+    let processedText = '';
+    
+    // Process formatting
+    html.body.childNodes.forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE) {
+            processedText += node.textContent + '\n';
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+            switch (node.nodeName.toLowerCase()) {
+                case 'p':
+                    processedText += node.textContent + '\n\n';
+                    break;
+                case 'strong':
+                case 'b':
+                    doc.setFont(undefined, 'bold');
+                    processedText += node.textContent;
+                    doc.setFont(undefined, 'normal');
+                    break;
+                case 'em':
+                case 'i':
+                    doc.setFont(undefined, 'italic');
+                    processedText += node.textContent;
+                    doc.setFont(undefined, 'normal');
+                    break;
+                case 'ul':
+                case 'ol':
+                    Array.from(node.children).forEach((li, index) => {
+                        processedText += `  • ${li.textContent}\n`;
+                    });
+                    processedText += '\n';
+                    break;
+                default:
+                    processedText += node.textContent + '\n';
             }
         }
+    });
+
+    // Split text into lines and add to PDF
+    const lines = doc.splitTextToSize(processedText.trim(), 170);
+    doc.text(lines, 20, yPos);
+    yPos += lines.length * 7 + 10;
+
+    if (yPos > 270) {
+        doc.addPage();
+        yPos = 20;
+    }
+}
 
         // Add title
         doc.setFontSize(24);

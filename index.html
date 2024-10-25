@@ -587,13 +587,6 @@ function addSection(title, content) {
 
     processNode(tempDiv);
     yPos += 6; // Space after section
-}
-
-            // Always check if we need a new page before starting next section
-            if (yPos > 270) {
-                doc.addPage();
-                yPos = 20;
-            }
         }
 
         // Add title

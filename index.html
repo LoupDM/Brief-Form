@@ -107,13 +107,14 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
-        .task-drag-handle {
-            cursor: move;
-            padding: 5px;
-            margin-right: 5px;
-            background-color: #e2e8f0;
-            border-radius: 4px;
-        }
+.task-drag-handle {
+    cursor: move;
+    padding: 2px 5px;
+    margin: 0;
+    background-color: #e2e8f0;
+    border-radius: 4px;
+    display: inline-block;
+}
         .task-drag-handle:hover {
             background-color: #cbd5e0;
         }
@@ -254,17 +255,17 @@
         function createTaskRow(task = '', owner = '', dueDate = '') {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>
-                    <input type="checkbox" name="taskSelect" class="task-checkbox">
-                </td>
-                <td>
-                    <span class="task-drag-handle">☰</span>
-                    <input type="text" name="task[]" value="${task}">
-                </td>
-                <td><input type="text" name="owner[]" value="${owner}"></td>
-                <td><input type="date" name="dueDate[]" value="${dueDate}"></td>
-                <td><button type="button" class="delete-task">Delete</button></td>
-            `;
+        <td style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" name="taskSelect" class="task-checkbox">
+            <span class="task-drag-handle">☰</span>
+        </td>
+        <td>
+            <input type="text" name="task[]" value="${task}">
+        </td>
+        <td><input type="text" name="owner[]" value="${owner}"></td>
+        <td><input type="date" name="dueDate[]" value="${dueDate}"></td>
+        <td><button type="button" class="delete-task">Delete</button></td>
+    `;
 
             const checkbox = row.querySelector('input[name="taskSelect"]');
             checkbox.addEventListener('change', () => {

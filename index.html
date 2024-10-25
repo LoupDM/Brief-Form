@@ -85,6 +85,43 @@
 .task-drag-handle:hover {
     background-color: #cbd5e0;
 }
+                .task-toolbar {
+            display: none;
+            padding: 0.5rem;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        
+        .task-toolbar.visible {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .task-checkbox {
+            width: 1.2rem;
+            height: 1.2rem;
+            margin-right: 0.5rem;
+        }
+        
+        .selected-row {
+            background-color: #e2e8f0;
+        }
+        
+        .toolbar-button {
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .toolbar-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -161,28 +198,78 @@
                 </div>
             </div>
 
-            <div>
-                <h3 class="font-semibold mb-2 text-lg">TIMING and TASKS</h3>
-                <table id="tasksTable">
-                    <thead>
-                        <tr>
-                            <th>Task</th>
-                            <th>Owner</th>
-                            <th>Due Date</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="taskTableBody">
-                        <!-- Tasks will be added here dynamically -->
-                    </tbody>
-                </table>
-                <button type="button" id="addTask" class="mt-4 bg-blue-500 text-white">Add Task</button>
-            </div>
+             <div>
+        <h3 class="font-semibold mb-2 text-lg">TIMING and TASKS</h3>
+        <div id="taskToolbar" class="task-toolbar">
+            <span id="selectedCount" class="text-sm font-medium">0 selected</span>
+            <button type="button" id="duplicateSelected" class="toolbar-button bg-green-500">Duplicate Selected</button>
+            <button type="button" id="deleteSelected" class="toolbar-button bg-red-500">Delete Selected</button>
+        </div>
+        <table id="tasksTable">
+            <thead>
+                <tr>
+                    <th>
+                        <input type="checkbox" id="selectAll" class="task-checkbox">
+                    </th>
+                    <th>Task</th>
+                    <th>Owner</th>
+                    <th>Due Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="taskTableBody">
+                <!-- Tasks will be added here dynamically -->
+            </tbody>
+        </table>
+        <button type="button" id="addTask" class="mt-4 bg-blue-500 text-white">Add Task</button>
+    </div>
 
-            <div>
-                <label for="additionalNotes">Additional Notes:</label>
-                <textarea id="additionalNotes" name="additionalNotes" rows="3"></textarea>
-            </div>
+    <script>
+        const taskTableBody = document.getElementById('taskTableBody');
+        const taskToolbar = document.getElementById('taskToolbar');
+        const selectedCountSpan = document.getElementById('selectedCount');
+        const selectAllCheckbox = document.getElementById('selectAll');
+
+        function updateToolbarVisibility() {
+            const selectedTasks = document.querySelectorAll('input[name="taskSelect"]:checked');
+            const count = selectedTasks.length;
+            selectedCountSpan.textContent = `${count} selected`;
+            taskToolbar.classList.toggle('visible', count > 0);
+            selectAllCheckbox.checked = count === document.querySelectorAll('input[name="taskSelect"]').length;
+        }
+
+        function createTaskRow(task = '', owner = '', dueDate = '') {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <input type="checkbox" name="taskSelect" class="task-checkbox">
+                </td>
+                <td>
+                    <span class="task-drag-handle">☰</span>
+                    <input type="text" name="task[]" value="${task}">
+                </td>
+                <td><input type="text" name="owner[]" value="${owner}"></td>
+                <td><input type="date" name="dueDate[]" value="${dueDate}"></td>
+                <td><button type="button" class="delete-task">Delete</button></td>
+            `;
+
+            const checkbox = row.querySelector('input[name="taskSelect"]');
+            checkbox.addEventListener('change', () => {
+                row.classList.toggle('selected-row', checkbox.checked);
+                updateToolbarVisibility();
+            });
+
+            row.querySelector('.delete-task').addEventListener('click', function() {
+                if (taskTableBody.children.length > 1) {
+                    row.remove();
+                    updateToolbarVisibility();
+                } else {
+                    alert("You can't delete the last task. At least one task is required.");
+                }
+            });
+
+            return row;
+        }
 
             <div class="flex justify-between">
                 <button type="submit" class="bg-green-500 text-white">Save</button>
@@ -234,7 +321,65 @@ new Sortable(taskTableBody, {
     handle: '.task-drag-handle',
     ghostClass: 'bg-gray-100'
 });
+ // Select All functionality
+        selectAllCheckbox.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('input[name="taskSelect"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+                checkbox.closest('tr').classList.toggle('selected-row', this.checked);
+            });
+            updateToolbarVisibility();
+        });
 
+        // Duplicate Selected functionality
+        document.getElementById('duplicateSelected').addEventListener('click', function() {
+            const selectedRows = document.querySelectorAll('input[name="taskSelect"]:checked');
+            if (selectedRows.length === 0) return;
+
+            // Find the last selected row
+            const lastSelectedRow = Array.from(selectedRows).pop().closest('tr');
+            
+            // Create duplicates and insert them after the last selected row
+            selectedRows.forEach(checkbox => {
+                const originalRow = checkbox.closest('tr');
+                const taskInput = originalRow.querySelector('input[name="task[]"]').value;
+                const ownerInput = originalRow.querySelector('input[name="owner[]"]').value;
+                const dueDateInput = originalRow.querySelector('input[name="dueDate[]"]').value;
+                
+                const newRow = createTaskRow(taskInput, ownerInput, dueDateInput);
+                lastSelectedRow.parentNode.insertBefore(newRow, lastSelectedRow.nextSibling);
+            });
+
+            // Unselect all after duplication
+            selectAllCheckbox.checked = false;
+            selectedRows.forEach(checkbox => {
+                checkbox.checked = false;
+                checkbox.closest('tr').classList.remove('selected-row');
+            });
+            updateToolbarVisibility();
+        });
+
+        // Delete Selected functionality
+        document.getElementById('deleteSelected').addEventListener('click', function() {
+            const selectedRows = document.querySelectorAll('input[name="taskSelect"]:checked');
+            if (selectedRows.length === 0) return;
+
+            const remainingRows = taskTableBody.children.length - selectedRows.length;
+            if (remainingRows < 1) {
+                alert("You must keep at least one task.");
+                return;
+            }
+
+            selectedRows.forEach(checkbox => {
+                checkbox.closest('tr').remove();
+            });
+            updateToolbarVisibility();
+        });
+
+        document.getElementById('addTask').addEventListener('click', function() {
+            taskTableBody.appendChild(createTaskRow());
+        });
+        
         document.getElementById('projectForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);

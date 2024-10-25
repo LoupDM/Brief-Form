@@ -255,18 +255,19 @@ const selectAllCheckbox = document.getElementById('selectAll');
 // Initialize TinyMCE
 tinymce.init({
     selector: 'textarea:not([name="task[]"])',
-    apiKey: 'i1gr13bjn04mkseuam1j1to4hcw5tg0thbu31wrkx79s9t2f',
     height: 300,
     menubar: false,
     plugins: [
-        'advlist', 'autolink', 'lists', 'link', 'charmap', 'preview',
-        'searchreplace', 'visualblocks', 'code', 'fullscreen',
-        'insertdatetime', 'table', 'wordcount'
+        'anchor', 'autolink', 'charmap', 'codesample', 'emoticons',
+        'link', 'lists', 'media', 'searchreplace', 'table',
+        'visualblocks', 'wordcount', 'checklist', 'export',
+        'formatpainter', 'pageembed', 'permanentpen', 'advtable',
+        'advcode', 'editimage', 'tableofcontents'
     ],
-    toolbar: 'undo redo | formatselect | ' +
-        'bold italic backcolor forecolor | alignleft aligncenter ' +
-        'alignright alignjustify | bullist numlist outdent indent | ' +
-        'removeformat | help',
+    toolbar: 'undo redo | blocks fontfamily fontsize | ' +
+        'bold italic underline strikethrough | link table | ' +
+        'align lineheight | checklist numlist bullist indent outdent | ' +
+        'removeformat',
     content_style: 'body { font-family: Arial, sans-serif; font-size: 14px }'
 });
 

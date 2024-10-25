@@ -428,7 +428,11 @@ new Sortable(taskTableBody, {
 document.getElementById('shareBtn').addEventListener('click', function() {
     const data = JSON.parse(localStorage.getItem('projectPlan'));
     if (data) {
-        const doc = new jsPDF();
+        const doc = new jsPDF({
+    unit: 'pt',
+    format: 'letter',
+    lineHeight: 1.2
+});
         let yPos = 20;
 
         // Set default font

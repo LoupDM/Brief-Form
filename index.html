@@ -441,109 +441,149 @@ document.getElementById('shareBtn').addEventListener('click', function() {
             return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
         }
 
-        function addSection(title, content) {
-            doc.setFontSize(16);
-            doc.setTextColor(44, 62, 80);
-            doc.text(title, 20, yPos);
-            yPos += 10;
-            doc.setFontSize(12);
-            doc.setTextColor(0, 0, 0);
+function addSection(title, content) {
+    // Page margin check before starting new section
+    if (yPos > 270) {
+        doc.addPage();
+        yPos = 20;
+    }
 
-            // Function to handle text wrapping and page breaks
-            function addTextWithWrapping(text, fontSize = 12, style = 'normal') {
-                doc.setFontSize(fontSize);
-                doc.setFont("helvetica", style);
-                const lines = doc.splitTextToSize(text, 170);
-                
+    // Section Title
+    doc.setFontSize(14);
+    doc.setTextColor(44, 62, 80);
+    doc.setFont("helvetica", "bold");
+    doc.text(title, 20, yPos);
+    yPos += 8;
+
+    // Reset text style for content
+    doc.setFontSize(11);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "normal");
+
+    // Parse HTML content
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+
+    function processNode(node, level = 0) {
+        Array.from(node.childNodes).forEach(child => {
+            if (yPos > 270) {
+                doc.addPage();
+                yPos = 20;
+            }
+
+            if (child.nodeType === Node.TEXT_NODE && child.textContent.trim()) {
+                const lines = doc.splitTextToSize(child.textContent.trim(), 170);
                 lines.forEach(line => {
-                    if (yPos > 270) {
-                        doc.addPage();
-                        yPos = 20;
-                    }
                     doc.text(line, 20, yPos);
-                    yPos += fontSize * 0.5;
+                    yPos += 6;
                 });
-                yPos += 5; // Add space after text block
-            }
+            } 
+            else if (child.nodeType === Node.ELEMENT_NODE) {
+                const indent = level * 10;
+                switch (child.tagName.toLowerCase()) {
+                    case 'h1':
+                        doc.setFontSize(16);
+                        doc.setFont("helvetica", "bold");
+                        processTextContent(child.textContent, 20);
+                        doc.setFontSize(11);
+                        doc.setFont("helvetica", "normal");
+                        break;
 
-            // Parse HTML content
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = content;
+                    case 'h2':
+                        doc.setFontSize(14);
+                        doc.setFont("helvetica", "bold");
+                        processTextContent(child.textContent, 20);
+                        doc.setFontSize(11);
+                        doc.setFont("helvetica", "normal");
+                        break;
 
-            function processNode(node, level = 0) {
-                Array.from(node.childNodes).forEach(child => {
-                    if (child.nodeType === Node.TEXT_NODE && child.textContent.trim()) {
-                        addTextWithWrapping(child.textContent.trim());
-                    } 
-                    else if (child.nodeType === Node.ELEMENT_NODE) {
-                        switch (child.tagName.toLowerCase()) {
-                            case 'h1':
-                                addTextWithWrapping(child.textContent, 24, 'bold');
-                                break;
-                            case 'h2':
-                                addTextWithWrapping(child.textContent, 20, 'bold');
-                                break;
-                            case 'h3':
-                                addTextWithWrapping(child.textContent, 16, 'bold');
-                                break;
-                            case 'strong':
-                            case 'b':
-                                addTextWithWrapping(child.textContent, 12, 'bold');
-                                break;
-                            case 'em':
-                            case 'i':
-                                addTextWithWrapping(child.textContent, 12, 'italic');
-                                break;
-                            case 'ul':
-                            case 'ol':
-                                yPos += 5;
-                                Array.from(child.children).forEach((li, index) => {
-                                    if (yPos > 270) {
-                                        doc.addPage();
-                                        yPos = 20;
-                                    }
-                                    const bullet = child.tagName.toLowerCase() === 'ul' ? '•' : `${index + 1}.`;
-                                    const indent = level * 10;
-                                    doc.text(bullet, 20 + indent, yPos);
-                                    const liText = doc.splitTextToSize(li.textContent.trim(), 160 - indent);
-                                    liText.forEach((line, lineIndex) => {
-                                        if (yPos > 270) {
-                                            doc.addPage();
-                                            yPos = 20;
-                                        }
-                                        doc.text(line, 30 + indent, yPos + (lineIndex * 7));
-                                        if (lineIndex === liText.length - 1) {
-                                            yPos += (lineIndex + 1) * 7;
-                                        }
-                                    });
-                                });
-                                yPos += 5;
-                                break;
-                            case 'p':
-                                if (child.innerHTML.trim()) {
-                                    processNode(child, level);
-                                    yPos += 5;
+                    case 'strong':
+                    case 'b':
+                        doc.setFont("helvetica", "bold");
+                        processTextContent(child.textContent, 20 + indent);
+                        doc.setFont("helvetica", "normal");
+                        break;
+
+                    case 'em':
+                    case 'i':
+                        doc.setFont("helvetica", "italic");
+                        processTextContent(child.textContent, 20 + indent);
+                        doc.setFont("helvetica", "normal");
+                        break;
+
+                    case 'ul':
+                    case 'ol':
+                        yPos += 3;
+                        Array.from(child.children).forEach((li, index) => {
+                            if (yPos > 270) {
+                                doc.addPage();
+                                yPos = 20;
+                            }
+                            const bulletX = 20 + indent;
+                            const textX = bulletX + 5;
+                            const bullet = child.tagName.toLowerCase() === 'ul' ? '•' : `${index + 1}.`;
+                            
+                            // Draw bullet/number
+                            doc.text(bullet, bulletX, yPos);
+                            
+                            // Handle wrapped text in list items
+                            const lines = doc.splitTextToSize(li.textContent.trim(), 160 - indent);
+                            lines.forEach((line, lineIndex) => {
+                                if (yPos > 270) {
+                                    doc.addPage();
+                                    yPos = 20;
                                 }
-                                break;
-                            case 'br':
-                                yPos += 7;
-                                break;
-                            case 'div':
-                                processNode(child, level);
-                                break;
-                            default:
-                                if (child.textContent.trim()) {
-                                    addTextWithWrapping(child.textContent.trim());
-                                }
+                                doc.text(line, textX, yPos);
+                                yPos += 6;
+                            });
+                            yPos += 2; // Space between list items
+                        });
+                        yPos += 3;
+                        break;
+
+                    case 'p':
+                        if (child.innerHTML.trim()) {
+                            processNode(child, level);
+                            yPos += 4;
                         }
-                    }
-                });
+                        break;
+
+                    case 'br':
+                        yPos += 6;
+                        break;
+
+                    case 'div':
+                        processNode(child, level);
+                        break;
+
+                    default:
+                        if (child.textContent.trim()) {
+                            const lines = doc.splitTextToSize(child.textContent.trim(), 170 - indent);
+                            lines.forEach(line => {
+                                doc.text(line, 20 + indent, yPos);
+                                yPos += 6;
+                            });
+                        }
+                }
             }
+        });
+    }
 
-            processNode(tempDiv);
+    function processTextContent(text, x) {
+        const lines = doc.splitTextToSize(text.trim(), 170);
+        lines.forEach(line => {
+            if (yPos > 270) {
+                doc.addPage();
+                yPos = 20;
+            }
+            doc.text(line, x, yPos);
+            yPos += 6;
+        });
+    }
 
-            // Ensure minimum spacing between sections
-            yPos += 10;
+    processNode(tempDiv);
+    yPos += 6; // Space after section
+}
 
             // Always check if we need a new page before starting next section
             if (yPos > 270) {

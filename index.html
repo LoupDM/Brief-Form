@@ -243,7 +243,7 @@
     </div>
 
      <script>
-       // Initialize jsPDF
+ // Initialize jsPDF
 const { jsPDF } = window.jspdf;
 
 // Get DOM elements
@@ -344,6 +344,7 @@ selectAllCheckbox.addEventListener('change', function() {
     });
     updateToolbarVisibility();
 });
+
 document.getElementById('duplicateSelected').addEventListener('click', function() {
     const selectedRows = document.querySelectorAll('input[name="taskSelect"]:checked');
     if (selectedRows.length === 0) return;
@@ -423,16 +424,22 @@ new Sortable(taskTableBody, {
         }
     }
 });
-
 // PDF Generation code
 document.getElementById('shareBtn').addEventListener('click', function() {
     const data = JSON.parse(localStorage.getItem('projectPlan'));
     if (data) {
         const doc = new jsPDF({
-    unit: 'pt',
-    format: 'letter',
-    lineHeight: 1.2
-});
+            unit: 'mm',
+            format: 'letter',
+            lineHeight: 1.5,
+            margin: {
+                top: 20,
+                right: 20,
+                bottom: 20,
+                left: 20
+            }
+        });
+        
         let yPos = 20;
 
         // Set default font
@@ -445,152 +452,150 @@ document.getElementById('shareBtn').addEventListener('click', function() {
             return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
         }
 
-function addSection(title, content) {
-    // Page margin check before starting new section
-    if (yPos > 270) {
-        doc.addPage();
-        yPos = 20;
-    }
-
-    // Section Title
-    doc.setFontSize(14);
-    doc.setTextColor(44, 62, 80);
-    doc.setFont("helvetica", "bold");
-    doc.text(title, 20, yPos);
-    yPos += 8;
-
-    // Reset text style for content
-    doc.setFontSize(11);
-    doc.setTextColor(0, 0, 0);
-    doc.setFont("helvetica", "normal");
-
-    // Parse HTML content
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = content;
-
-    function processNode(node, level = 0) {
-        Array.from(node.childNodes).forEach(child => {
-            if (yPos > 270) {
+        function addSection(title, content) {
+            // Page margin check before starting new section
+            if (yPos > 250) {
                 doc.addPage();
                 yPos = 20;
             }
 
-            if (child.nodeType === Node.TEXT_NODE && child.textContent.trim()) {
-                const lines = doc.splitTextToSize(child.textContent.trim(), 170);
-                lines.forEach(line => {
-                    doc.text(line, 20, yPos);
-                    yPos += 6;
-                });
-            } 
-            else if (child.nodeType === Node.ELEMENT_NODE) {
-                const indent = level * 10;
-                switch (child.tagName.toLowerCase()) {
-                    case 'h1':
-                        doc.setFontSize(16);
-                        doc.setFont("helvetica", "bold");
-                        processTextContent(child.textContent, 20);
-                        doc.setFontSize(11);
-                        doc.setFont("helvetica", "normal");
-                        break;
-
-                    case 'h2':
-                        doc.setFontSize(14);
-                        doc.setFont("helvetica", "bold");
-                        processTextContent(child.textContent, 20);
-                        doc.setFontSize(11);
-                        doc.setFont("helvetica", "normal");
-                        break;
-
-                    case 'strong':
-                    case 'b':
-                        doc.setFont("helvetica", "bold");
-                        processTextContent(child.textContent, 20 + indent);
-                        doc.setFont("helvetica", "normal");
-                        break;
-
-                    case 'em':
-                    case 'i':
-                        doc.setFont("helvetica", "italic");
-                        processTextContent(child.textContent, 20 + indent);
-                        doc.setFont("helvetica", "normal");
-                        break;
-
-                    case 'ul':
-                    case 'ol':
-                        yPos += 3;
-                        Array.from(child.children).forEach((li, index) => {
-                            if (yPos > 270) {
-                                doc.addPage();
-                                yPos = 20;
-                            }
-                            const bulletX = 20 + indent;
-                            const textX = bulletX + 5;
-                            const bullet = child.tagName.toLowerCase() === 'ul' ? '•' : `${index + 1}.`;
-                            
-                            // Draw bullet/number
-                            doc.text(bullet, bulletX, yPos);
-                            
-                            // Handle wrapped text in list items
-                            const lines = doc.splitTextToSize(li.textContent.trim(), 160 - indent);
-                            lines.forEach((line, lineIndex) => {
-                                if (yPos > 270) {
-                                    doc.addPage();
-                                    yPos = 20;
-                                }
-                                doc.text(line, textX, yPos);
-                                yPos += 6;
-                            });
-                            yPos += 2; // Space between list items
-                        });
-                        yPos += 3;
-                        break;
-
-                    case 'p':
-                        if (child.innerHTML.trim()) {
-                            processNode(child, level);
-                            yPos += 4;
-                        }
-                        break;
-
-                    case 'br':
-                        yPos += 6;
-                        break;
-
-                    case 'div':
-                        processNode(child, level);
-                        break;
-
-                    default:
-                        if (child.textContent.trim()) {
-                            const lines = doc.splitTextToSize(child.textContent.trim(), 170 - indent);
-                            lines.forEach(line => {
-                                doc.text(line, 20 + indent, yPos);
-                                yPos += 6;
-                            });
-                        }
-                }
-            }
-        });
-    }
-
-    function processTextContent(text, x) {
-        const lines = doc.splitTextToSize(text.trim(), 170);
-        lines.forEach(line => {
-            if (yPos > 270) {
-                doc.addPage();
-                yPos = 20;
-            }
-            doc.text(line, x, yPos);
+            // Section Title
+            doc.setFontSize(12);
+            doc.setTextColor(44, 62, 80);
+            doc.setFont("helvetica", "bold");
+            doc.text(title, 20, yPos);
             yPos += 6;
-        });
-    }
 
-    processNode(tempDiv);
-    yPos += 6; // Space after section
+            // Reset text style for content
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont("helvetica", "normal");
+
+            // Parse HTML content
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = content;
+
+            function processNode(node, level = 0) {
+                Array.from(node.childNodes).forEach(child => {
+                    if (yPos > 250) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+
+                    if (child.nodeType === Node.TEXT_NODE && child.textContent.trim()) {
+                        const lines = doc.splitTextToSize(child.textContent.trim(), 175);
+                        lines.forEach(line => {
+                            doc.text(line, 20 + (level * 5), yPos);
+                            yPos += 5;
+                        });
+                    } 
+                    else if (child.nodeType === Node.ELEMENT_NODE) {
+                        const indent = level * 5;
+                        switch (child.tagName.toLowerCase()) {
+                            case 'h1':
+                                doc.setFontSize(14);
+                                doc.setFont("helvetica", "bold");
+                                processTextContent(child.textContent, 20 + indent);
+                                doc.setFontSize(10);
+                                doc.setFont("helvetica", "normal");
+                                break;
+
+                            case 'h2':
+                                doc.setFontSize(12);
+                                doc.setFont("helvetica", "bold");
+                                processTextContent(child.textContent, 20 + indent);
+                                doc.setFontSize(10);
+                                doc.setFont("helvetica", "normal");
+                                break;
+
+                            case 'strong':
+                            case 'b':
+                                doc.setFont("helvetica", "bold");
+                                processTextContent(child.textContent, 20 + indent);
+                                doc.setFont("helvetica", "normal");
+                                break;
+
+                            case 'em':
+                            case 'i':
+                                doc.setFont("helvetica", "italic");
+                                processTextContent(child.textContent, 20 + indent);
+                                doc.setFont("helvetica", "normal");
+                                break;
+
+                            case 'ul':
+                            case 'ol':
+                                yPos += 2;
+                                Array.from(child.children).forEach((li, index) => {
+                                    if (yPos > 250) {
+                                        doc.addPage();
+                                        yPos = 20;
+                                    }
+                                    const bulletX = 20 + indent;
+                                    const textX = bulletX + 4;
+                                    const bullet = child.tagName.toLowerCase() === 'ul' ? '•' : `${index + 1}.`;
+                                    
+                                    doc.text(bullet, bulletX, yPos);
+                                    
+                                    const lines = doc.splitTextToSize(li.textContent.trim(), 165 - indent);
+                                    lines.forEach((line, lineIndex) => {
+                                        if (yPos > 250) {
+                                            doc.addPage();
+                                            yPos = 20;
+                                        }
+                                        doc.text(line, textX, yPos);
+                                        yPos += 5;
+                                    });
+                                    yPos += 1;
+                                });
+                                yPos += 2;
+                                break;
+
+                            case 'p':
+                                if (child.innerHTML.trim()) {
+                                    processNode(child, level);
+                                    yPos += 3;
+                                }
+                                break;
+
+                            case 'br':
+                                yPos += 5;
+                                break;
+
+                            case 'div':
+                                processNode(child, level);
+                                break;
+
+                            default:
+                                if (child.textContent.trim()) {
+                                    const lines = doc.splitTextToSize(child.textContent.trim(), 175 - indent);
+                                    lines.forEach(line => {
+                                        doc.text(line, 20 + indent, yPos);
+                                        yPos += 5;
+                                    });
+                                }
+                        }
+                    }
+                });
+            }
+
+            function processTextContent(text, x) {
+                const lines = doc.splitTextToSize(text.trim(), 175);
+                lines.forEach(line => {
+                    if (yPos > 250) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    doc.text(line, x, yPos);
+                    yPos += 5;
+                });
+            }
+
+            processNode(tempDiv);
+            yPos += 4;
         }
 
         // Add title
-        doc.setFontSize(24);
+        doc.setFontSize(16);
         doc.setTextColor(52, 152, 219);
         doc.text("Project Plan", 105, yPos, null, null, "center");
         yPos += 15;
@@ -610,7 +615,7 @@ function addSection(title, content) {
         addSection('RACI:', `R (Responsible): ${data.responsible}\nA (Accountable): ${data.accountable}\nC (Consulted): ${data.consulted}\nI (Informed): ${data.informed}`);
 
         // Add Tasks using autoTable
-        doc.setFontSize(16);
+        doc.setFontSize(12);
         doc.setTextColor(44, 62, 80);
         doc.text('Tasks:', 20, yPos);
         yPos += 10;
@@ -625,11 +630,16 @@ function addSection(title, content) {
             ]),
             theme: 'striped',
             headStyles: { fillColor: [52, 152, 219], textColor: 255 },
+            styles: {
+                fontSize: 10,
+                cellPadding: 3
+            },
             columnStyles: {
-                0: { cellWidth: 80 },
-                1: { cellWidth: 50 },
-                2: { cellWidth: 40 }
-            }
+                0: { cellWidth: 85 },
+                1: { cellWidth: 55 },
+                2: { cellWidth: 35 }
+            },
+            margin: { left: 20, right: 20 }
         });
 
         yPos = doc.lastAutoTable.finalY + 10;

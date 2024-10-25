@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Brief Template</title>
+    <title>Project Plan Template</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
@@ -75,17 +75,7 @@
         .delete-task:hover {
             background-color: #e53e3e;
         }
-        .task-drag-handle {
-    cursor: move;
-    padding: 5px;
-    margin-right: 5px;
-    background-color: #e2e8f0;
-    border-radius: 4px;
-}
-.task-drag-handle:hover {
-    background-color: #cbd5e0;
-}
-                .task-toolbar {
+        .task-toolbar {
             display: none;
             padding: 0.5rem;
             background-color: #f8fafc;
@@ -93,23 +83,19 @@
             border-radius: 4px;
             margin-bottom: 1rem;
         }
-        
         .task-toolbar.visible {
             display: flex;
             gap: 0.5rem;
             align-items: center;
         }
-        
         .task-checkbox {
             width: 1.2rem;
             height: 1.2rem;
             margin-right: 0.5rem;
         }
-        
         .selected-row {
             background-color: #e2e8f0;
         }
-        
         .toolbar-button {
             padding: 0.25rem 0.75rem;
             border-radius: 4px;
@@ -117,16 +103,25 @@
             color: white;
             cursor: pointer;
         }
-        
         .toolbar-button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+        }
+        .task-drag-handle {
+            cursor: move;
+            padding: 5px;
+            margin-right: 5px;
+            background-color: #e2e8f0;
+            border-radius: 4px;
+        }
+        .task-drag-handle:hover {
+            background-color: #cbd5e0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="text-3xl font-bold">Project Brief Template</h1>
+        <h1 class="text-3xl font-bold">Project Plan Template</h1>
         
         <form id="projectForm" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -180,51 +175,66 @@
                 <h3 class="font-semibold mb-2 text-lg">RACI:</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="responsible">R:</label>
+                        <label for="responsible">R (Responsible):</label>
                         <input type="text" id="responsible" name="responsible">
                     </div>
                     <div>
-                        <label for="accountable">A:</label>
+                        <label for="accountable">A (Accountable):</label>
                         <input type="text" id="accountable" name="accountable">
                     </div>
                     <div>
-                        <label for="consulted">C:</label>
+                        <label for="consulted">C (Consulted):</label>
                         <input type="text" id="consulted" name="consulted">
                     </div>
                     <div>
-                        <label for="informed">I:</label>
+                        <label for="informed">I (Informed):</label>
                         <input type="text" id="informed" name="informed">
                     </div>
                 </div>
             </div>
 
-             <div>
-        <h3 class="font-semibold mb-2 text-lg">TIMING and TASKS</h3>
-        <div id="taskToolbar" class="task-toolbar">
-            <span id="selectedCount" class="text-sm font-medium">0 selected</span>
-            <button type="button" id="duplicateSelected" class="toolbar-button bg-green-500">Duplicate Selected</button>
-            <button type="button" id="deleteSelected" class="toolbar-button bg-red-500">Delete Selected</button>
-        </div>
-        <table id="tasksTable">
-            <thead>
-                <tr>
-                    <th>
-                        <input type="checkbox" id="selectAll" class="task-checkbox">
-                    </th>
-                    <th>Task</th>
-                    <th>Owner</th>
-                    <th>Due Date</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="taskTableBody">
-                <!-- Tasks will be added here dynamically -->
-            </tbody>
-        </table>
-        <button type="button" id="addTask" class="mt-4 bg-blue-500 text-white">Add Task</button>
+            <div>
+                <h3 class="font-semibold mb-2 text-lg">TIMING and TASKS</h3>
+                <div id="taskToolbar" class="task-toolbar">
+                    <span id="selectedCount" class="text-sm font-medium">0 selected</span>
+                    <button type="button" id="duplicateSelected" class="toolbar-button bg-green-500">Duplicate Selected</button>
+                    <button type="button" id="deleteSelected" class="toolbar-button bg-red-500">Delete Selected</button>
+                </div>
+                <table id="tasksTable">
+                    <thead>
+                        <tr>
+                            <th>
+                                <input type="checkbox" id="selectAll" class="task-checkbox">
+                            </th>
+                            <th>Task</th>
+                            <th>Owner</th>
+                            <th>Due Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="taskTableBody">
+                        <!-- Tasks will be added here dynamically -->
+                    </tbody>
+                </table>
+                <button type="button" id="addTask" class="mt-4 bg-blue-500 text-white">Add Task</button>
+            </div>
+
+            <div>
+                <label for="additionalNotes">Additional Notes:</label>
+                <textarea id="additionalNotes" name="additionalNotes" rows="3"></textarea>
+            </div>
+
+            <div class="flex justify-between">
+                <button type="submit" class="bg-green-500 text-white">Save</button>
+                <button type="button" id="loadBtn" class="bg-yellow-500 text-white">Load</button>
+                <button type="button" id="shareBtn" class="bg-blue-500 text-white">Share as PDF</button>
+            </div>
+        </form>
     </div>
 
     <script>
+        const { jsPDF } = window.jspdf;
+        
         const taskTableBody = document.getElementById('taskTableBody');
         const taskToolbar = document.getElementById('taskToolbar');
         const selectedCountSpan = document.getElementById('selectedCount');
@@ -271,57 +281,7 @@
             return row;
         }
 
-            <div class="flex justify-between">
-                <button type="submit" class="bg-green-500 text-white">Save</button>
-                <button type="button" id="loadBtn" class="bg-yellow-500 text-white">Load</button>
-                <button type="button" id="shareBtn" class="bg-blue-500 text-white">Share as PDF</button>
-            </div>
-        </form>
-        <div class="mt-4 p-4 bg-gray-100 rounded">
-    <p class="text-sm text-gray-600 mb-2">Data Storage Information:</p>
-    <p class="text-sm text-gray-600">• Your data is saved locally in your browser</p>
-    <p class="text-sm text-gray-600">• Last saved: <span id="lastSaved">Never</span></p>
-    <button type="button" id="clearDataBtn" class="mt-2 bg-red-500 text-white px-3 py-1 rounded text-sm">Clear Saved Data</button>
-</div>
-    </div>
-
-    <script>
-        const { jsPDF } = window.jspdf;
-
-        const taskTableBody = document.getElementById('taskTableBody');
-
-        function createTaskRow(task = '', owner = '', dueDate = '') {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-        <td>
-            <span class="task-drag-handle">☰</span>
-            <input type="text" name="task[]" value="${task}">
-        </td>
-        <td><input type="text" name="owner[]" value="${owner}"></td>
-        <td><input type="date" name="dueDate[]" value="${dueDate}"></td>
-        <td><button type="button" class="delete-task">Delete</button></td>
-    `;
-            row.querySelector('.delete-task').addEventListener('click', function() {
-                if (taskTableBody.children.length > 1) {
-                    row.remove();
-                } else {
-                    alert("You can't delete the last task. At least one task is required.");
-                }
-            });
-            return row;
-        }
-
-        document.getElementById('addTask').addEventListener('click', function() {
-            taskTableBody.appendChild(createTaskRow());
-        });
-
-        
-new Sortable(taskTableBody, {
-    animation: 150,
-    handle: '.task-drag-handle',
-    ghostClass: 'bg-gray-100'
-});
- // Select All functionality
+        // Select All functionality
         selectAllCheckbox.addEventListener('change', function() {
             const checkboxes = document.querySelectorAll('input[name="taskSelect"]');
             checkboxes.forEach(checkbox => {
@@ -379,7 +339,118 @@ new Sortable(taskTableBody, {
         document.getElementById('addTask').addEventListener('click', function() {
             taskTableBody.appendChild(createTaskRow());
         });
-        
+
+        // Initialize with one empty task
+        taskTableBody.appendChild(createTaskRow());
+
+        // Initialize Sortable
+        new Sortable(taskTableBody, {
+            animation: 150,
+            handle: '.task-drag-handle',
+            ghostClass: 'bg-gray-100'
+        });
+
+          // PDF Generation code
+        document.getElementById('shareBtn').addEventListener('click', function() {
+            const data = JSON.parse(localStorage.getItem('projectPlan'));
+            if (data) {
+                const doc = new jsPDF();
+                let yPos = 20;
+
+                // Set default font
+                doc.setFont("helvetica");
+
+                // Helper function to format date as MM/DD/YYYY
+                function formatDate(dateString) {
+                    if (!dateString) return '';
+                    const date = new Date(dateString);
+                    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+                }
+
+                // Helper function to add a section to the PDF
+                function addSection(title, content) {
+                    doc.setFontSize(16);
+                    doc.setTextColor(44, 62, 80);
+                    doc.text(title, 20, yPos);
+                    yPos += 10;
+                    doc.setFontSize(12);
+                    doc.setTextColor(0, 0, 0);
+                    const lines = doc.splitTextToSize(content, 170);
+                    doc.text(lines, 20, yPos);
+                    yPos += lines.length * 7 + 10;
+
+                    if (yPos > 270) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                }
+                // Add title
+                doc.setFontSize(24);
+                doc.setTextColor(52, 152, 219);
+                doc.text("Project Plan", 105, yPos, null, null, "center");
+                yPos += 15;
+
+                // Add project details to PDF
+                addSection('Project Title:', data.projectTitle);
+                addSection('Where will this run?', data.whereRun);
+                addSection('Business Problem:', data.businessProblem);
+                addSection('Customer/Manager Action:', data.customerAction);
+                addSection('Define a Win:', data.defineWin);
+                addSection('Prime Prospect:', data.primeProspect);
+                addSection("Prime Prospect's Problem:", data.prospectProblem);
+                addSection('Know the Brand:', data.knowBrand);
+                addSection('Deliverables:', data.deliverables);
+
+                // Add RACI
+                addSection('RACI:', `R (Responsible): ${data.responsible}\nA (Accountable): ${data.accountable}\nC (Consulted): ${data.consulted}\nI (Informed): ${data.informed}`);
+
+                // Add Tasks using autoTable
+                doc.setFontSize(16);
+                doc.setTextColor(44, 62, 80);
+                doc.text('Tasks:', 20, yPos);
+                yPos += 10;
+
+                doc.autoTable({
+                    startY: yPos,
+                    head: [['Task', 'Owner', 'Due Date']],
+                    body: data.tasks.map(task => [
+                        task.task,
+                        task.owner,
+                        formatDate(task.dueDate)
+                    ]),
+                    theme: 'striped',
+                    headStyles: { fillColor: [52, 152, 219], textColor: 255 },
+                    columnStyles: {
+                        0: { cellWidth: 80 },
+                        1: { cellWidth: 50 },
+                        2: { cellWidth: 40 }
+                    }
+                });
+
+                yPos = doc.lastAutoTable.finalY + 10;
+
+                addSection('Additional Notes:', data.additionalNotes);
+
+                // Add page numbers
+                const pageCount = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(10);
+                    doc.setTextColor(100);
+                    doc.text('Page ' + i + ' of ' + pageCount, doc.internal.pageSize.width - 30, doc.internal.pageSize.height - 10);
+                }
+
+                // Generate filename based on project title
+                let filename = data.projectTitle ? data.projectTitle.trim() : 'Project Plan';
+                filename = filename.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.pdf';
+
+                doc.save(filename);
+            } else {
+                alert('No project plan to share. Please save a plan first.');
+            }
+        });
+
+        // Form submission handler
         document.getElementById('projectForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
@@ -393,6 +464,7 @@ new Sortable(taskTableBody, {
             alert('Project plan saved!');
         });
 
+        // Load button handler
         document.getElementById('loadBtn').addEventListener('click', function() {
             const data = JSON.parse(localStorage.getItem('projectPlan'));
             if (data) {
@@ -406,126 +478,12 @@ new Sortable(taskTableBody, {
                 data.tasks.forEach(task => {
                     taskTableBody.appendChild(createTaskRow(task.task, task.owner, task.dueDate));
                 });
+                updateToolbarVisibility();
                 alert('Project plan loaded!');
             } else {
                 alert('No saved project plan found!');
             }
         });
-
-        document.getElementById('shareBtn').addEventListener('click', function() {
-            const data = JSON.parse(localStorage.getItem('projectPlan'));
-            if (data) {
-                const doc = new jsPDF();
-                let yPos = 10;
-
-                // Helper function to add a section to the PDF
-function addSection(title, content) {
-    doc.setFontSize(16);
-    doc.setTextColor(44, 62, 80); // Dark blue color
-    doc.text(title, 20, yPos);
-    yPos += 10;
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0); // Black color for content
-    const lines = doc.splitTextToSize(content, 170);
-    doc.text(lines, 20, yPos);
-    yPos += lines.length * 7 + 10;
-
-    if (yPos > 270) {
-        doc.addPage();
-        yPos = 20;
-    }
-}
-function formatDate(dateString) {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
-}
-                // Add project details to PDF
-                addSection('Project Title:', data.projectTitle);
-                addSection('Where will this run?', data.whereRun);
-                addSection('Business Problem:', data.businessProblem);
-                addSection('Customer/Manager Action:', data.customerAction);
-                addSection('Define a Win:', data.defineWin);
-                addSection('Prime Prospect:', data.primeProspect);
-                addSection("Prime Prospect's Problem:", data.prospectProblem);
-                addSection('Know the Brand:', data.knowBrand);
-                addSection('Deliverables:', data.deliverables);
-
-                // Add RACI
-                addSection('RACI:', `R: ${data.responsible}\nA: ${data.accountable}\nC: ${data.consulted}\nI: ${data.informed}`);
-
-// Add Tasks using autoTable
-doc.setFontSize(16);
-doc.setTextColor(44, 62, 80);
-doc.text('Tasks:', 20, yPos);
-yPos += 10;
-
-
-doc.autoTable({
-    startY: yPos,
-    head: [['Task', 'Owner', 'Due Date']],
-    body: data.tasks.map(task => [task.task, task.owner, formatDate(task.dueDate)]),
-    theme: 'striped',
-    headStyles: { fillColor: [52, 152, 219], textColor: 255 },
-    columnStyles: {
-        0: { cellWidth: 80 },
-        1: { cellWidth: 50 },
-        2: { cellWidth: 40 }
-    }
-});
-
-yPos = doc.lastAutoTable.finalY + 10;
-
-                addSection('Additional Notes:', data.additionalNotes);
-
-                // Generate filename based on project title
-let filename = data.projectTitle ? data.projectTitle.trim() : 'Project Plan';
-filename = filename.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.pdf';
-
-doc.save(filename);
-            } else {
-                alert('No project plan to share. Please save a plan first.');
-            }
-        });
-
-        // Initialize with one empty task
-        taskTableBody.appendChild(createTaskRow());
-
-        // Update the save function to include timestamp
-document.getElementById('projectForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const data = getFormData();
-    data.lastSaved = new Date().toLocaleString();
-    localStorage.setItem('projectPlan', JSON.stringify(data));
-    updateLastSavedTime(data.lastSaved);
-    alert('Project plan saved!');
-});
-
-// Function to update the "Last saved" display
-function updateLastSavedTime(time) {
-    document.getElementById('lastSaved').textContent = time || 'Never';
-}
-
-// Clear data button functionality
-document.getElementById('clearDataBtn').addEventListener('click', function() {
-    if (confirm('Are you sure you want to clear all saved data? This cannot be undone.')) {
-        localStorage.removeItem('projectPlan');
-        document.getElementById('projectForm').reset();
-        taskTableBody.innerHTML = '';
-        taskTableBody.appendChild(createTaskRow());
-        updateLastSavedTime('Never');
-        alert('All saved data has been cleared.');
-    }
-});
-
-// Check for existing data on page load
-window.addEventListener('load', function() {
-    const savedData = localStorage.getItem('projectPlan');
-    if (savedData) {
-        const data = JSON.parse(savedData);
-        updateLastSavedTime(data.lastSaved);
-    }
-});
     </script>
 </body>
 </html>

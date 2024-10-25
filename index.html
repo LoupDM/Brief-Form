@@ -232,14 +232,17 @@
         </form>
     </div>
 
-    <script>
+     <script>
+        // Initialize jsPDF
         const { jsPDF } = window.jspdf;
         
+        // Get DOM elements
         const taskTableBody = document.getElementById('taskTableBody');
         const taskToolbar = document.getElementById('taskToolbar');
         const selectedCountSpan = document.getElementById('selectedCount');
         const selectAllCheckbox = document.getElementById('selectAll');
 
+        // Utility Functions
         function updateToolbarVisibility() {
             const selectedTasks = document.querySelectorAll('input[name="taskSelect"]:checked');
             const count = selectedTasks.length;
@@ -263,30 +266,18 @@
                 <td><button type="button" class="delete-task">Delete</button></td>
             `;
 
-const checkbox = row.querySelector('input[name="taskSelect"]');
-    checkbox.addEventListener('change', () => {
-        row.classList.toggle('selected-row', checkbox.checked);
-        updateToolbarVisibility();
-
+            const checkbox = row.querySelector('input[name="taskSelect"]');
+            checkbox.addEventListener('change', () => {
+                row.classList.toggle('selected-row', checkbox.checked);
+                updateToolbarVisibility();
+                
                 // Update Sortable selection when checkbox is changed
-        if (checkbox.checked) {
-            Sortable.utils.select(row);
-        } else {
-            Sortable.utils.deselect(row);
-        }
-    });
-
-    row.querySelector('.delete-task').addEventListener('click', function() {
-        if (taskTableBody.children.length > 1) {
-            row.remove();
-            updateToolbarVisibility();
-        } else {
-            alert("You can't delete the last task. At least one task is required.");
-        }
-    });
-
-    return row;
-}
+                if (checkbox.checked) {
+                    Sortable.utils.select(row);
+                } else {
+                    Sortable.utils.deselect(row);
+                }
+            });
 
             row.querySelector('.delete-task').addEventListener('click', function() {
                 if (taskTableBody.children.length > 1) {
@@ -300,26 +291,24 @@ const checkbox = row.querySelector('input[name="taskSelect"]');
             return row;
         }
 
-        // Select All functionality
-// Replace the existing Select All functionality with this:
-selectAllCheckbox.addEventListener('change', function() {
-    const checkboxes = document.querySelectorAll('input[name="taskSelect"]');
-    checkboxes.forEach(checkbox => {
-        const row = checkbox.closest('tr');
-        checkbox.checked = this.checked;
-        row.classList.toggle('selected-row', this.checked);
-        
-        // Update Sortable selection
-        if (this.checked) {
-            Sortable.utils.select(row);
-        } else {
-            Sortable.utils.deselect(row);
-        }
-    });
-    updateToolbarVisibility();
-});
+        // Event Listeners
+        selectAllCheckbox.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('input[name="taskSelect"]');
+            checkboxes.forEach(checkbox => {
+                const row = checkbox.closest('tr');
+                checkbox.checked = this.checked;
+                row.classList.toggle('selected-row', this.checked);
+                
+                // Update Sortable selection
+                if (this.checked) {
+                    Sortable.utils.select(row);
+                } else {
+                    Sortable.utils.deselect(row);
+                }
+            });
+            updateToolbarVisibility();
+        });
 
-        // Duplicate Selected functionality
         document.getElementById('duplicateSelected').addEventListener('click', function() {
             const selectedRows = document.querySelectorAll('input[name="taskSelect"]:checked');
             if (selectedRows.length === 0) return;
@@ -347,7 +336,6 @@ selectAllCheckbox.addEventListener('change', function() {
             updateToolbarVisibility();
         });
 
-        // Delete Selected functionality
         document.getElementById('deleteSelected').addEventListener('click', function() {
             const selectedRows = document.querySelectorAll('input[name="taskSelect"]:checked');
             if (selectedRows.length === 0) return;
@@ -371,44 +359,37 @@ selectAllCheckbox.addEventListener('change', function() {
         // Initialize with one empty task
         taskTableBody.appendChild(createTaskRow());
 
+        // Initialize Sortable
+        new Sortable(taskTableBody, {
+            animation: 150,
+            handle: '.task-drag-handle',
+            ghostClass: 'bg-gray-100',
+            multiDrag: true,
+            selectedClass: 'selected-row',
+            fallbackTolerance: 3,
+            onSelect: function(evt) {
+                const checkbox = evt.item.querySelector('input[name="taskSelect"]');
+                if (checkbox && !checkbox.checked) {
+                    checkbox.checked = true;
+                    updateToolbarVisibility();
+                }
+            },
+            onDeselect: function(evt) {
+                const checkbox = evt.item.querySelector('input[name="taskSelect"]');
+                if (checkbox && checkbox.checked) {
+                    checkbox.checked = false;
+                    updateToolbarVisibility();
+                }
+            },
+            setData: function(dataTransfer, dragEl) {
+                const selectedCount = document.querySelectorAll('input[name="taskSelect"]:checked').length;
+                if (selectedCount > 1) {
+                    dataTransfer.setDragImage(dragEl, 0, 0);
+                }
+            }
+        });
 
-// Initialize with one empty task
-taskTableBody.appendChild(createTaskRow());
-
-// Replace the existing Sortable initialization with this:
-// Initialize Sortable with multi-drag functionality
-new Sortable(taskTableBody, {
-    animation: 150,
-    handle: '.task-drag-handle',
-    ghostClass: 'bg-gray-100',
-    multiDrag: true, // Enable multi-drag
-    selectedClass: 'selected-row', // Class added to selected items
-    fallbackTolerance: 3,
-    onSelect: function(evt) {
-        // When an item is selected via drag, also check its checkbox
-        const checkbox = evt.item.querySelector('input[name="taskSelect"]');
-        if (checkbox && !checkbox.checked) {
-            checkbox.checked = true;
-            updateToolbarVisibility();
-        }
-    },
-    onDeselect: function(evt) {
-        // When an item is deselected via drag, also uncheck its checkbox
-        const checkbox = evt.item.querySelector('input[name="taskSelect"]');
-        if (checkbox && checkbox.checked) {
-            checkbox.checked = false;
-            updateToolbarVisibility();
-        }
-    },
-    setData: function(dataTransfer, dragEl) {
-        // Custom drag image for multiple items
-        const selectedCount = document.querySelectorAll('input[name="taskSelect"]:checked').length;
-        if (selectedCount > 1) {
-            dataTransfer.setDragImage(dragEl, 0, 0);
-        }
-    }
-});
-          // PDF Generation code
+                 // PDF Generation code
         document.getElementById('shareBtn').addEventListener('click', function() {
             const data = JSON.parse(localStorage.getItem('projectPlan'));
             if (data) {
@@ -442,6 +423,7 @@ new Sortable(taskTableBody, {
                         yPos = 20;
                     }
                 }
+
                 // Add title
                 doc.setFontSize(24);
                 doc.setTextColor(52, 152, 219);
@@ -542,6 +524,6 @@ new Sortable(taskTableBody, {
                 alert('No saved project plan found!');
             }
         });
-    </script>
+</script>
 </body>
 </html>
